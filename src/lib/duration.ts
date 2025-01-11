@@ -7,11 +7,22 @@ const symbolToSecondMap = {
     "d" : 60*60*24
 };
 
-export function parseDurationStr(timeStr: string, outputUnit = "s") {
-    const outputScale = symbolToSecondMap[outputUnit];
-    if(!outputScale) {
-        throw new Error(`unknown output unit: '${outputUnit}'`);
+type UNITS = keyof typeof symbolToSecondMap;
+
+function validateUnitType(unit: string): asserts unit is UNITS {
+    if (!(unit in symbolToSecondMap)) {
+        throw new Error(`unknown unit: '${unit}'`);
     }
+}
+
+function getUnitSeconds(unit: string) {
+    validateUnitType(unit);
+    return symbolToSecondMap[unit];
+}
+
+export function parseDurationStr(timeStr: string | undefined, outputUnit = "s") {
+    timeStr = timeStr || "";
+    const outputScale = getUnitSeconds(outputUnit);
 
     var total = 0;
 
@@ -29,11 +40,7 @@ export function parseDurationStr(timeStr: string, outputUnit = "s") {
             decPart += (+ char) / decPlace;
         } else if((+ char) >= 0 && (+ char) <= 9) {
             if(!parsingNum) {
-                let scale = symbolToSecondMap[unit];
-
-                if(!scale) {
-                    throw new Error(`unknown unit: '${unit}'`);
-                }
+                const scale = getUnitSeconds(unit);
 
                 total += (numPart * scale) + decPart;
 
@@ -56,11 +63,7 @@ export function parseDurationStr(timeStr: string, outputUnit = "s") {
 
     }
 
-    let scale = symbolToSecondMap[unit];
-
-    if(!scale) {
-        throw new Error(`unknown unit: '${unit}'`);
-    }
+    const scale = getUnitSeconds(unit);
 
     total += (numPart * scale) + decPart;
 
