@@ -1,5 +1,5 @@
-import { Context, ContextAPIClients, Devvit, TriggerContext } from '@devvit/public-api';
-import { parseDurationStr } from './lib/duration';
+import { Devvit, TriggerContext } from '@devvit/public-api';
+import { parseDurationStr } from './lib/duration.js';
 
 Devvit.configure({
   redis: true,
@@ -80,6 +80,10 @@ Devvit.addSettings([
 async function userIsMod({ reddit }: TriggerContext, userId: string, subredditName: string) {
   const user = await reddit.getUserById(userId);
 
+  if (!user) {
+    return false;
+  }
+
   const modlist = await reddit.getModerators({
     subredditName,
     limit: 1,
@@ -102,13 +106,13 @@ Devvit.addTrigger({
       return;
     }
 
-    const contentId = event.post.id;
+    const contentId = event.post?.id;
     if(!contentId) {
       console.error("post ID missing");
       return;
     }
 
-    if(!event.subreddit.name) {
+    if(!event.subreddit?.name) {
       console.error("subreddit name not present");
       return;
     }
@@ -183,13 +187,13 @@ Devvit.addTrigger({
       return;
     }
 
-    const contentId = event.comment.id;
+    const contentId = event.comment?.id;
     if(!contentId) {
       console.error("comment ID missing");
       return;
     }
 
-    if(!event.subreddit.name) {
+    if(!event.subreddit?.name) {
       console.error("subreddit name not present");
       return;
     }
